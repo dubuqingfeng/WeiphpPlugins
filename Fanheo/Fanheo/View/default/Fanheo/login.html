@@ -1,0 +1,189 @@
+<include file="Fanheo/fanheo_header" title="登录界面" keywords="饭盒网-登录界面"/>
+</head>
+<style>
+.input-lg, .form-horizontal .form-group-lg .form-control {
+    font-size: 18px;
+    height: 46px;
+    line-height: 1.33;
+    padding: 10px 16px;
+}
+.form-group {
+    margin-bottom: 5px;
+}
+.form-control {
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    color: #555;
+    display: block;
+    font-size: 14px;
+    height: 34px;
+    line-height: 1.42857;
+    padding: 6px -6px 12px 6px;
+    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+    width: 100%;
+}
+.btn_common{
+    font-size:12px;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 2px;
+    cursor: pointer;
+    background-color: #2ec366;
+    color: #fff;
+}
+.dish_item textarea{
+    padding: 8px;
+    background: #eaeaea;
+    border-radius: 12px;
+    border: 1px solid #dedede;
+    outline: none;
+    resize: none;
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    box-shadow: none;
+    display:none;
+}
+.dish_item{
+    height:45px!important;
+}
+.dish_item.on{
+    height:97px!important;
+} 
+.dish_item.on textarea{
+    margin-top:3px;
+    display:block;
+}
+</style>
+<script type="text/javascript" src="__JS__/admin_common.js?v={:SITE_VERSION}"></script>
+<body id="page_intelOrder" class="myOrderCon">
+<div style="float:none;width:100%;" class="headselect">
+	<a class="link_tel icon-phone">一个帐号，玩转本站所有服务！</a>
+</div>
+<div class="container">
+<section style="">
+    <article>
+        <h2>登录
+         
+        </h2>
+    </article>
+</section>
+<section style="margin-bottom:70px;">
+    <article>
+        <form id="form_dish" action="{:U('loginhandler', array('token'=>$token, 'wecha_id'=>$wecha_id))}" method="post">
+
+            <div class="form-group">
+					<input type="text" name="user_name" class="form-control" placeholder="账号">
+					<input type="password" name="user_pass" class="form-control" placeholder="密码">
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-warning btn-block btn-lg">
+						立即登陆
+					</button>
+				</div>
+        </form>
+    </article>
+</section>
+</div>
+<script>
+function changeCount(thi, evt, price, id) {
+    if ("button" == evt.target.type) {
+        var counter = thi.querySelectorAll("input[name='numBox']")[0];
+        var val = parseInt(counter.value);
+        var countnums = parseInt($("#countnums").attr("nums"));
+        var totalPrice = $("#total").attr("price");
+        if ("btn-reduce" == evt.target.className) {
+            val--;
+        } else {
+            val++;
+        }
+        counter.value = Math.max(0, val);
+        if(val >= 0){
+            if ("btn-reduce" == evt.target.className) {
+                var num = countnums - 1;
+                var tnum = -1;
+                var pr =  parseFloat(totalPrice) - parseInt(price);
+            } else {
+                var tnum = 1;
+                var num = countnums + 1;
+                var pr = parseFloat(totalPrice) + parseInt(price);
+            }
+            $("#countnums").html(num);
+            $("#countnums").attr("nums",num);
+            $("#total").html(pr);
+            $("#total").attr("price", pr);
+        }
+        editOrder(id, tnum, $('#des_' + id).val());
+    }
+}
+
+function editOrder(id, num, des){
+    $.ajax({
+        'url':"{:U('editOrder', array('token'=>$token, 'wecha_id' => $wecha_id, 'cid' => $cid))}",
+        'data':{'id':id, 'num':num, 'des':des},
+        'type':'POST',
+        'async':'false',
+        'success':function(db){}
+    });
+}
+
+$(document).ready(function(){
+    var min_height = $(document).height() - 80;
+    $(".container").css("height", min_height + 'px');
+    $('.des').blur(function(){
+		var id = parseInt($(this).attr('did'));
+		var des = $(this).val();
+		editOrder(id, 0, des);
+    });
+    $('#submit_form').click(function() {
+        $("#submit_form").addClass('btn_2_disable').prop('disabled',true); 
+        $.ajax({
+            'url': $('#form_dish').attr('action'),
+            'type': 'post',
+            dataType:'JSON',
+            'success': function(response) {
+                if (response.success == '1') {
+        			window.location = "{:U('din_myOrder', array('token'=>$token, 'wecha_id' => $wecha_id, 'cid' => $cid))}";
+                } else {
+                	 MDialog.alert(response.msg, '', null, '确定');
+                     return false;
+                }
+
+            }
+        });
+    });
+});
+function clearAll() {
+    MDialog.confirm('', '是否清空菜单？', null,
+            '确定', function() {
+                $.ajax({
+                    'url': "{:U('clearMyMenu', array('token'=>$token, 'wecha_id' => $wecha_id, 'cid' => $cid))}",
+                    'success': function(db) {
+                        $('#myorder').empty();
+                        $('#total').text('0');
+                    }
+                });
+            }, null, '取消', null, null, null, true, true);
+}
+
+function slideOn(thi, evt) {
+    var li = $(thi).closest("li");
+    li["toggleClass"]("on");
+}
+</script>
+<include file="Fanheo/fanheo_footer"/>
+</body>
+<script type="text/javascript">
+window.shareData = {  
+            "moduleName":"fanheo",
+            "moduleID":"0",
+            "imgUrl": "", 
+            "timeLineLink": "{:C('site_url') .  U('mymenu',array('token' => $token, 'cid' => $cid))}",
+            "sendFriendLink": "{:C('site_url') .  U('mymenu',array('token' => $token, 'cid' => $cid))}",
+            "weiboLink": "{:C('site_url') .  U('mymenu',array('token' => $token, 'cid' => $cid))}",
+            "tTitle": "{$metaTitle}",
+            "tContent": "{$metaTitle}"
+        };
+</script>
+{$shareScript}
+</html>
